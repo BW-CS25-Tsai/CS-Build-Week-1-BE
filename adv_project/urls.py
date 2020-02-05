@@ -8,6 +8,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/adv/', include('adventure.urls')),
     path('', include('rest_auth.urls')),
-    path('registration/', include('rest_auth.registration.urls')),
+    # path('registration/', include('rest_auth.registration.urls')),
     # path('login/', views.obtain_auth_token, name='auth')
 ]

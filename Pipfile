@@ -19,8 +19,13 @@ dj-database-url = "*"
 whitenoise = "*"
 drangorestframework = "*"
 django-rest-knox = "*"
+numpy = "*"
+djangorestframework-jsonapi = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
