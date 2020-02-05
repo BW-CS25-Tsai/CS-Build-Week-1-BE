@@ -4,7 +4,7 @@
 # You can modify generate_rooms() to create your own
 # procedural generation algorithm and use print_rooms()
 # to see the world.
-
+# import 
 
 class Room:
     def __init__(self, id, name, description, x, y):
@@ -52,6 +52,16 @@ class World:
         self.height = size_y
         for i in range( len(self.grid) ):
             self.grid[i] = [None] * size_x
+
+        # declare coordinate dict
+        coord_dict = dict()
+        # declare rooms dict
+        rooms_dict = dict()
+
+
+
+
+
 
         # Start from lower-left corner (0,0)
         x = -1 # (this will become 0 on the first step)
@@ -152,9 +162,9 @@ class World:
 
 
 w = World()
-num_rooms = 44
-width = 8
-height = 7
+num_rooms = 100
+width = 15
+height = 15
 w.generate_rooms(width, height, num_rooms)
 w.print_rooms()
 
