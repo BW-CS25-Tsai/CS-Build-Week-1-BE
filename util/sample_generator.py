@@ -98,8 +98,6 @@ class World:
         for i in range( len(self.grid) ):
             self.grid[i] = [None] * size_x
 
-        self.rooms = {}
-
         if numRooms < 1:
             print("Must create at least 1 room")
             return None
@@ -107,23 +105,20 @@ class World:
         # The coordinates of our room. We start from middle of display
         x = (self.width // 2)-1
         y = (self.height // 2)
-        print(x,y)
   
         # Create a list that will hold the IDs of rooms with valid connections available
-        validRooms = []
+        validRooms = set()
 
         # Create n rooms
         for i in range(0, numRooms):
             
             if i == 0:
                 # Create the starting room
-                validRooms.append(i)
                 new_room = Room(i, "The starting Room", "This is the starting room.", x, y)
+                validRooms.add(new_room)
                 self.rooms[i] = new_room
                 self.grid[y][x] = new_room
                 self.occupied.add(str([x,y]))
-                # print("self.occupied: ",self.occupied)
-                # print("validRooms: ", validRooms)
             else:
                 # If it's not the first room....
                 # ...connect to the previous room in a random direction
@@ -133,21 +128,17 @@ class World:
                 # until we find a room with valid connections.
                 # Note that there will ALWAYS be a valid room available
                 while random_dir is None:
-                    print("valideRooms: ",validRooms)
                     # Get a room that we think is valid
-                    connectingRoom = validRooms[0]
-                    del validRooms[0]
+                    connectingRoom = validRooms.pop().id
                     # Get the coordinates of that room
                     x = self.rooms[connectingRoom].x
                     y = self.rooms[connectingRoom].y
                     # See if we can get a random direction from that room
                     random_dir = self.getRandomDirection(self.rooms[connectingRoom], [x,y])
-                    print("random_dir: ",random_dir)
                     # If our room is valid (i.e. not None) then we put it back in our
                     # set of valid rooms.
                     if random_dir is not None:
-                        validRooms.append(connectingRoom)
-                        print("validRooms after appending: ", validRooms)
+                        validRooms.add(self.rooms[connectingRoom])
                     # If it's NOT valid, then we don't put it back into validRooms
                     # and we try again with a different room.
 
@@ -159,18 +150,15 @@ class World:
                 # Create a room
                 new_room = Room(i, "Another room", "This is another room.", x, y)
                 self.rooms[i] = new_room
+                print("x: ",x, ", y: ", y)
                 self.grid[y][x] = new_room
 
                 self.rooms[connectingRoom].connect_rooms(new_room, random_dir)
-                print(self.rooms[connectingRoom].get_room_in_direction(random_dir))
-                validRooms.append(i)
+                # print(self.rooms[connectingRoom].get_room_in_direction(random_dir))
+                validRooms.add(new_room)
                 self.occupied.add(str([x,y]))
                 new_room.x, new_room.y = x,y
-            
-
-            random.shuffle(validRooms)
-            
-
+                
 
         # Set the starting room to the first room. Change this if you want a new starting room.
         self.startingRoom = self.rooms[0]
@@ -333,8 +321,8 @@ w = World()
 # w.grid
 
 num_rooms =100
-width = 15
-height = 15
+width = 20
+height = 20
 w.generate_rooms(width, height, num_rooms)
 w.print_rooms()
 
