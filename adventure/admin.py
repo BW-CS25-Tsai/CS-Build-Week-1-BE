@@ -1,17 +1,21 @@
 from django.contrib import admin
 # Register your models here.
-from .models import Room, Player
+from .models import Room
 
-class PlayerInline(admin.TabularInline):
-    model = Player
-    extra = 2
+admin.site.site_header = 'Adventure Admin'
+admin.site.site_title = 'Adventure Admin Area'
+admin.site.site_title = 'Welcome to the Pollster admin area'
 
-class RoomAdmin(admin.ModelAdmin):
-    fieldsets = [(None, {'fields': ['title']}),
-    ('Description', {'fields': ['description'], 'classes': ['collapse']}),]
-    inline = [PlayerInline]
+# class PlayerInline(admin.TabularInline):
+#     model = Player
+#     extra = 2
 
-# admin.site.register(Room)
+# class RoomAdmin(admin.ModelAdmin):
+#     fieldsets = [(None, {'fields': ['title']}),
+#     ('Description', {'fields': ['description'], 'classes': ['collapse']}),]
+#     inline = [PlayerInline]
+
+admin.site.register(Room)
 # admin.site.register(Player)
-admin.site.register(Room, RoomAdmin)
+# admin.site.register(Room, RoomAdmin)
 
