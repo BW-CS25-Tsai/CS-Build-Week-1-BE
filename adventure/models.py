@@ -12,6 +12,10 @@ class Room(models.Model):
     s_to = models.IntegerField(default=0)
     e_to = models.IntegerField(default=0)
     w_to = models.IntegerField(default=0)
+
+    x = models.IntegerField(default=0)
+    y = models.IntegerField(default=0)
+
     def connectRooms(self, destinationRoom, direction):
         destinationRoomID = destinationRoom.id
         try:
@@ -21,12 +25,16 @@ class Room(models.Model):
         else:
             if direction == "n":
                 self.n_to = destinationRoomID
+                destinationRoom.s_to = self
             elif direction == "s":
                 self.s_to = destinationRoomID
+                destinationRoom.n_to = self
             elif direction == "e":
                 self.e_to = destinationRoomID
+                destinationRoom.w_to = self
             elif direction == "w":
                 self.w_to = destinationRoomID
+                destinationRoom.e_to = self
             else:
                 print("Invalid direction")
                 return
@@ -61,6 +69,8 @@ def create_user_player(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_player(sender, instance, **kwargs):
     instance.player.save()
+
+# @receiver(post_save, sender=User)
 
 
 
