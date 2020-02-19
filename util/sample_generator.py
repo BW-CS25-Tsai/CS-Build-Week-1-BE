@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-from adventure.models import Player, Room
+from ..adventure.models import Player, Room
 import random, copy
 import uuid
 
@@ -239,9 +239,10 @@ width = 20
 height = 20
 w.generate_rooms(width, height, num_rooms)
 
+rooms = Room.objects.all()
 players=Player.objects.all()
 for p in players:
-  p.currentRoom=r_outside.id
+  p.currentRoom= rooms[0]
   p.save()
 
 # w.print_rooms()
