@@ -10,43 +10,11 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-from ..adventure.models import Player, Room
+from adventure.models import Player, Room
 import random, copy
 import uuid
 
-# class Room:
-#     def __init__(self, id, name, description, x, y):
-#         self.id = id
-#         self.name = name
-#         self.description = description
-#         self.n_to = None
-#         self.s_to = None
-#         self.e_to = None
-#         self.w_to = None
-#         self.x = x
-#         self.y = y
-#     def __repr__(self):
-#         if self.e_to is not None:
-#             return f"({self.x}, {self.y}) -> ({self.e_to.x}, {self.e_to.y})"
-#         return f"({self.x}, {self.y})"
-#     def connectRooms(self, connecting_room, direction):
-#         '''
-#         Connect two rooms in the given n/s/e/w direction
-#         '''
-#         reverse_dirs = {"n": "s", "s": "n", "e": "w", "w": "e"}
-#         reverse_dir = reverse_dirs[direction]
-#         setattr(self, f"{direction}_to", connecting_room)
-#         setattr(connecting_room, f"{reverse_dir}_to", self)
-#     def get_room_in_direction(self, direction):
-#         return getattr(self, f"{direction}_to")
-
 class World():
-    # title = models.CharField(max_length=50, default="DEFAULT TITLE")
-    # description = models.CharField(max_length=500, default="DEFAULT DESCRIPTION")
-    # n_to = models.IntegerField(default=0)
-    # s_to = models.IntegerField(default=0)
-    # e_to = models.IntegerField(default=0)
-    # w_to = models.IntegerField(default=0)
 
     def __init__(self):
         self.grid = None
@@ -63,19 +31,19 @@ class World():
         adjacent grid is also unoccupied.
         """
         dirs = []
-        if room.n_to is None and self._checkCoordinates(coords, "n"):
+        if room.n_to == -1 and self._checkCoordinates(coords, "n"):
             dirs.append("n")
-        if room.s_to is None and self._checkCoordinates(coords, "s"):
+        if room.s_to == -1 and self._checkCoordinates(coords, "s"):
             dirs.append("s")
-        if room.w_to is None and self._checkCoordinates(coords, "w"):
+        if room.w_to == -1 and self._checkCoordinates(coords, "w"):
             dirs.append("w")
-        if room.e_to is None and self._checkCoordinates(coords, "e"):
+        if room.e_to == -1 and self._checkCoordinates(coords, "e"):
             dirs.append("e")
         random.shuffle(dirs)
         if len(dirs) > 0:
             return dirs[0]
         else:
-            return None
+            return ""
             
     def _updateCoordinates(self, coords, direction):
         """
@@ -96,6 +64,8 @@ class World():
         # """
         # Check if the grid in an adjoining direction is unoccupied and if next to boundary
         # """
+
+        # May need to define boundary in self.occupied  <---------------
         return str(self._updateCoordinates(coords, direction)) not in self.occupied
         
     def generate_rooms(self, size_x, size_y, numRooms):
@@ -118,35 +88,36 @@ class World():
         # Create a list that will hold the IDs of rooms with valid connections available
         validRooms = set()
         # Create n rooms
-        for i in range(0, numRooms):
+        for i in range(numRooms):
             if i == 0:
+                # If it's not the first room....
                 # Create the starting room
-                new_room = Room(i, "The starting Room", "This is the starting room.", x, y)
+                new_room = Room(id=i, title="The starting Room", description="This is the starting room.", x=x, y=y)
                 validRooms.add(new_room)
+                # print("validRooms @ i =0: ", validRooms)
                 self.rooms[i] = new_room
                 new_room.save()
                 self.grid[y][x] = new_room
                 self.occupied.add(str([x,y]))
             else:
-                # If it's not the first room....
-                # ...connect to the previous room in a random direction
-                random_dir = None
+                random_dir = ""
                
                 # In case we run into a room with no valid connections, keep looping
                 # until we find a room with valid connections.
                 # Note that there will ALWAYS be a valid room available
-                while random_dir is None:
+                while random_dir == "":
+                    # print("validRooms @ i !=0: ", validRooms)
                     # Get a room that we think is valid
-                    connectingRoom = validRooms.pop().id
+                    connectingRoom = random.choice(tuple(validRooms)).id
                     # Get the coordinates of that room
                     x = self.rooms[connectingRoom].x
                     y = self.rooms[connectingRoom].y
                     # See if we can get a random direction from that room
                     random_dir = self._getRandomDirection(self.rooms[connectingRoom], [x,y])
-                    # If our room is valid (i.e. not None) then we put it back in our
-                    # set of valid rooms.
-                    if random_dir is not None:
+                    # If our room is valid (i.e. not -1) then we put it back in our set of valid rooms.
+                    if random_dir != "":
                         validRooms.add(self.rooms[connectingRoom])
+                        # print("validRooms after add(): ", validRooms)
                     # If it's NOT valid, then we don't put it back into validRooms
                     # and we try again with a different room.
                 
@@ -155,12 +126,13 @@ class World():
                 x,y = xy[0], xy[1]
                 
                 # Create a room
-                new_room = Room(i, "Another room", "This is another room.", x, y)
+                new_room = Room(id=i, title="Another room", description="This is another room.", x=x, y=y)
                 self.rooms[i] = new_room
+                self.grid[y][x] = new_room                
                 new_room.save()
-                self.grid[y][x] = new_room
-                
                 self.rooms[connectingRoom].connectRooms(new_room, random_dir)
+                new_room.save()
+                self.rooms[connectingRoom].save()
                 # print(self.rooms[connectingRoom].get_room_in_direction(random_dir))
                 validRooms.add(new_room)
                 self.occupied.add(str([x,y]))
@@ -193,7 +165,7 @@ class World():
             # PRINT NORTH CONNECTION ROW
             str += "#"
             for room in row:
-                if room is not None and room.n_to is not None:
+                if room is not None and room.n_to != -1:
                     str += "  |  "
                 else:
                     str += "     "
@@ -201,7 +173,7 @@ class World():
             # PRINT ROOM ROW
             str += "#"
             for room in row:
-                if room is not None and room.w_to is not None:
+                if room is not None and room.w_to != -1:
                     str += "-"
                 else:
                     str += " "
@@ -209,7 +181,7 @@ class World():
                     str += f"{room.id}".zfill(3)
                 else:
                     str += "   "
-                if room is not None and room.e_to is not None:
+                if room is not None and room.e_to != -1:
                     str += "-"
                 else:
                     str += " "
@@ -217,7 +189,7 @@ class World():
             # PRINT SOUTH CONNECTION ROW
             str += "#"
             for room in row:
-                if room is not None and room.s_to is not None:
+                if room is not None and room.s_to != -1:
                     str += "  |  "
                 else:
                     str += "     "
@@ -245,7 +217,7 @@ for p in players:
   p.currentRoom= rooms[0]
   p.save()
 
-# w.print_rooms()
+w.print_rooms()
 
 
 
