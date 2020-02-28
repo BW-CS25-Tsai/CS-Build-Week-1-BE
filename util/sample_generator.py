@@ -108,7 +108,7 @@ class World():
                 while random_dir == "":
                     # print("validRooms @ i !=0: ", validRooms)
                     # Get a room that we think is valid
-                    connectingRoom = random.choice(tuple(validRooms)).id
+                    connectingRoom = random.randrange(i)
                     # Get the coordinates of that room
                     x = self.rooms[connectingRoom].x
                     y = self.rooms[connectingRoom].y
@@ -131,8 +131,6 @@ class World():
                 self.grid[y][x] = new_room                
                 new_room.save()
                 self.rooms[connectingRoom].connectRooms(new_room, random_dir)
-                new_room.save()
-                self.rooms[connectingRoom].save()
                 # print(self.rooms[connectingRoom].get_room_in_direction(random_dir))
                 validRooms.add(new_room)
                 self.occupied.add(str([x,y]))
