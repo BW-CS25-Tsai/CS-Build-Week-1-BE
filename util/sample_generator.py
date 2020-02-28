@@ -101,13 +101,12 @@ class World():
                 self.occupied.add(str([x,y]))
             else:
                 random_dir = ""
-               
                 # In case we run into a room with no valid connections, keep looping
                 # until we find a room with valid connections.
                 # Note that there will ALWAYS be a valid room available
                 while random_dir == "":
                     # print("validRooms @ i !=0: ", validRooms)
-                    # Get a room that we think is valid
+                    # Get a random valid
                     connectingRoom = random.randrange(i)
                     # Get the coordinates of that room
                     x = self.rooms[connectingRoom].x
